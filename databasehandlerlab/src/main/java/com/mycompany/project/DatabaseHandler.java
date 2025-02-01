@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class DatabaseHandler {
 
@@ -32,13 +33,13 @@ public class DatabaseHandler {
         private String middleName;
         private String sex;
         private String dateOfBirth;
-        private Date dateOfEnrollment;
+        private int dateOfEnrollment;
         private String department;
         private int units;
         private String address;
 
         public Student(String id, String firstName, String lastName, String middleName, String sex, String dateOfBirth,
-                Date dateOfEnrollment, String department, int units, String address) {
+                int dateOfEnrollment, String department, int units, String address) {
             {
                 this.id = id;
                 this.firstName = firstName;
@@ -92,7 +93,8 @@ public class DatabaseHandler {
                             + "student_department TEXT CHECK (student_department IN (" + departmentString + ")),"
                             + "student_units INT CHECK (student_units > 0), " + "student_address TEXT NOT NULL" + ")");
             stmt.executeUpdate();
-            System.out.println("Command executed: " + stmt.toString());
+            // tester
+            System.out.println("\n\nCommand executed: " + stmt.toString());
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         } finally {
@@ -107,13 +109,59 @@ public class DatabaseHandler {
         }
     }
 
+    Boolean insertStudent(String id, String firstName, String lastName, String middleName, String sex,
+            String dateOfBirth, int dateOfEnrollment, String department, int units, String address) {
+        try {
+            PreparedStatement stmt = con.prepareStatement("INSERT INTO student VALUES (?,?,?,?,?,?,?,?,?,?)");
+            stmt.setString(1, id);
+            stmt.setString(2, firstName);
+            stmt.setString(3, middleName);
+            stmt.setString(4, lastName);
+            stmt.setString(5, sex);
+            stmt.setString(6, dateOfBirth);
+            stmt.setInt(7, dateOfEnrollment);
+            stmt.setString(8, department);
+            stmt.setInt(9, units);
+            stmt.setString(10, address);
+            stmt.executeUpdate();
+
+            // tester
+            System.out.println("\nCommand executed: " + stmt.toString());
+            return true;
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + "/insertstudent: " + e.getMessage());
+        }
+        return false;
+    }
+
+    Student getStudent(String id) {
+        try {
+            PreparedStatement stmt = con.prepareStatement("SELECT * FROM student WHERE student_id = ?");
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+            // tester
+            System.out.println("\nCommand executed: " + stmt.toString());
+            if (rs.next()) {
+                return new Student(id, rs.getString("student_fname"), rs.getString("student_mname"),
+                        rs.getString("student_lname"), rs.getString("student_sex"), rs.getString("student_birth"),
+                        rs.getInt("student_start"), rs.getString("student_department"), rs.getInt("student_units"),
+                        rs.getString("student_address"));
+            }
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + "/getstudent: " + e.getMessage());
+        }
+        return null;
+    }
+
     // tester
     void dropTable() {
         try {
             PreparedStatement stmt = con.prepareStatement("drop table student");
             stmt.executeUpdate();
+            // tester
+            System.out.println("\nCommand executed: " + stmt.toString());
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.err.println(e.getClass().getName() + "/droptable: " + e.getMessage());
         }
     }
 
@@ -122,6 +170,9 @@ public class DatabaseHandler {
         DatabaseHandler db = new DatabaseHandler(DEFAULT_DATABASE);
 
         db.initializeStudents();
+        db.insertStudent("12340101234", "John", "D.", "Doe", "M", "2000-05-15", 2022, "College of Science", 21,
+                "123 Main Street, Manila");
+        System.out.println("Student: " + db.getStudent("12340101234"));
         db.dropTable();
 
         try {
