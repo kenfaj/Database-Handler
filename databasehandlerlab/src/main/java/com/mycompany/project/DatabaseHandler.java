@@ -100,18 +100,9 @@ public class DatabaseHandler {
                             + "student_units INT CHECK (student_units > 0), " + "student_address TEXT NOT NULL" + ")");
             stmt.executeUpdate();
             // tester
-            System.out.println("\n\nCommand executed/initialized: " + stmt.toString());
+            System.out.println("\nCommand executed/initialized: " + stmt.toString());
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
-        } finally {
-            // Ensure the PreparedStatement is closed to avoid resource leaks
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (Exception e) {
-                    System.err.println("Failed to close PreparedStatement: " + e.getMessage());
-                }
-            }
         }
     }
 
@@ -307,11 +298,6 @@ public class DatabaseHandler {
         db.updateStudentInfo("33330104444", db.new Student("33330104444", "Jane", "Doe", "Doe", "F", "1990-01-01", 2018,
                 "College of Information and Computing Sciences", 6, "789 Main St"));
         System.out.println("newStudent: " + db.getStudent("33330104444"));
-        try {
-            db.con.close();
-        } catch (Exception e) {
-            System.err.println(e.getClass().getName() + "/main: " + e.getMessage());
-        }
 
     }
 
