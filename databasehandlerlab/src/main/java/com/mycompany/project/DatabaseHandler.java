@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+import org.sqlite.SQLiteException;
+
 public class DatabaseHandler {
 
     private Connection con;
@@ -207,6 +209,9 @@ public class DatabaseHandler {
             PreparedStatement stmt = con.prepareStatement("UPDATE students SET student_fname = ?, student_mname = ?, "
                     + "student_lname = ?, student_sex = ?, student_birth = ?, student_start = ?, student_department = ?, "
                     + "student_units = ?, student_address = ? WHERE student_id = ?");
+
+            validate(studentInfo.id, studentInfo.dateOfBirth);
+
             stmt.setString(1, studentInfo.firstName);
             stmt.setString(2, studentInfo.middleName);
             stmt.setString(3, studentInfo.lastName);
@@ -246,6 +251,9 @@ public class DatabaseHandler {
     Boolean insertStudent(Student newStudent) {
         try {
             PreparedStatement stmt = con.prepareStatement("INSERT INTO students VALUES (?,?,?,?,?,?,?,?,?,?)");
+
+            validate(newStudent.id, newStudent.dateOfBirth);
+
             stmt.setString(1, newStudent.id);
             stmt.setString(2, newStudent.firstName);
             stmt.setString(3, newStudent.middleName);
@@ -263,6 +271,26 @@ public class DatabaseHandler {
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + "/insertstudent: " + e.getMessage());
             return false;
+        }
+    }
+
+    void validate(String studentNumber, String studentBirth) throws SQLiteException {
+        validateStudentID(studentNumber);
+        validateStudentBirth(studentBirth);
+    }
+
+    void validateStudentID(String studentNumber) throws SQLiteException {
+        // student number Format follows XXXX010YYYY where XXXX and YYYY are any 4-digit
+        // number
+        if (!studentNumber.matches("[0-9]{4}010[0-9]{4}")) {
+            throw new SQLiteException("Invalid Student ID", null);
+        }
+    }
+
+    void validateStudentBirth(String studentBirth) throws SQLiteException {
+        // student birth Format follows YYYY-MM-DD
+        if (!studentBirth.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
+            throw new SQLiteException("Invalid Student Birth", null);
         }
     }
 
