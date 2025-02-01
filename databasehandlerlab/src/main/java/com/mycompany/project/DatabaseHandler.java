@@ -13,7 +13,7 @@ public class DatabaseHandler {
 
     private Connection con;
 
-    public static final String DEFAULT_DATABASE = "StudentDatabase.db";
+    public static final String DEFAULT_DATABASE = "students.db";
     private static final String DB_FOLDER = Paths.get("databasehandlerlab/src/main/resources").toAbsolutePath()
             .toString();
     private static final String DB_PATH = Paths.get(DB_FOLDER, DEFAULT_DATABASE).toString();
