@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 
 public class DatabaseHandler {
 
@@ -65,12 +66,70 @@ public class DatabaseHandler {
     }
 
     void initializeStudents() {
+        // Ensure the database connection is not null
+        if (con == null) {
+            System.err.println("Database connection is not established.");
+            return;
+        }
 
+        // Build a string of the departments for SQL
+        StringBuilder departmentString = new StringBuilder();
+        for (int i = 0; i < departments.length; i++) {
+            departmentString.append("'").append(departments[i]).append("'");
+            if (i < departments.length - 1) {
+                departmentString.append(",");
+            }
+        }
+
+        PreparedStatement stmt = null;
+        try {
+            stmt = con.prepareStatement(
+                    "CREATE TABLE student (" + "student_id TEXT PRIMARY KEY CHECK (student_id LIKE '____010____'), "
+                            + "student_fname TEXT NOT NULL, " + "student_mname TEXT NOT NULL, "
+                            + "student_lname TEXT NOT NULL, " + "student_sex TEXT CHECK (student_sex IN ('M', 'F')), "
+                            + "student_birth TEXT CHECK (student_birth LIKE '____-__-__'), "
+                            + "student_start INT CHECK (student_start BETWEEN 1900 AND 2100), "
+                            + "student_department TEXT CHECK (student_department IN (" + departmentString + ")),"
+                            + "student_units INT CHECK (student_units > 0), " + "student_address TEXT NOT NULL" + ")");
+            stmt.executeUpdate();
+            System.out.println("Command executed: " + stmt.toString());
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        } finally {
+            // Ensure the PreparedStatement is closed to avoid resource leaks
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (Exception e) {
+                    System.err.println("Failed to close PreparedStatement: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    // tester
+    void dropTable() {
+        try {
+            PreparedStatement stmt = con.prepareStatement("drop table student");
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
         System.out.println("Database Path: " + DB_PATH);
-        new DatabaseHandler(DEFAULT_DATABASE);
+        DatabaseHandler db = new DatabaseHandler(DEFAULT_DATABASE);
+
+        db.initializeStudents();
+        db.dropTable();
+
+        try {
+            db.con.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
     }
 
 }
